@@ -8,9 +8,34 @@ import java.util.List;
 
 @RestController @RequestMapping("/api/machines")
 public class MachineController {
- private final MachineService service;
- public MachineController(MachineService service){this.service=service;}
- @GetMapping public List<VendingMachine> all(){return service.all();}
- @GetMapping("/{id}") public VendingMachine get(@PathVariable Long id){return service.get(id);}
- @PostMapping public VendingMachine create(@Valid @RequestBody MachineRequest r){return service.create(r);}
+
+ private final MachineService machineService;
+
+ public MachineController(MachineService service){
+    this.machineService=service;
+
 }
+ @GetMapping 
+ public List<VendingMachine> all(){
+    return machineService.all();
+}
+ @GetMapping("/{id}")
+public VendingMachine get(@PathVariable Long id){
+    return machineService.get(id);
+}
+
+@PostMapping
+public VendingMachine create(@Valid @RequestBody MachineRequest r)
+{
+    return machineService.create(r);
+}
+
+@PutMapping("/{id}")
+public VendingMachine updateMachine(
+        @PathVariable Long id,
+        @RequestBody MachineRequest updatedMachine) {
+
+    return machineService.updateMachine(id, updatedMachine);
+}
+}
+

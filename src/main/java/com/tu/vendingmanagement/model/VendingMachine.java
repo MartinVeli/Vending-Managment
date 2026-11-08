@@ -3,26 +3,46 @@ package com.tu.vendingmanagement.model;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "vending_machines")
 public class VendingMachine {
-    @Id @GeneratedValue(strategy = GenerationType.IDENTITY) private Long id;
-    @NotBlank @Column(nullable=false, unique=true) private String code;
-    @NotBlank @Column(nullable=false) private String name;
-    @NotBlank @Column(nullable=false) private String address;
-    @NotNull @Column(nullable=false, precision=10, scale=7) private BigDecimal latitude;
-    @NotNull @Column(nullable=false, precision=10, scale=7) private BigDecimal longitude;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @NotBlank
+    @Column(nullable = false, unique = true)
+    private String code;
+
+    @NotBlank
+    @Column(nullable = false)
+    private String name;
+
+    @NotBlank
+    @Column(nullable = false)
+    private String address;
+
+    @NotNull
+    @Column(nullable = false, precision = 10, scale = 7)
+    private BigDecimal latitude;
+
+    @NotNull
+    @Column(nullable = false, precision = 10, scale = 7)
+    private BigDecimal longitude;
+
     @Enumerated(EnumType.STRING)
-    @Column(nullable=false, length=20)
+    @Column(nullable = false, length = 20)
     private MachineStatus status = MachineStatus.ACTIVE;
 
-    @Column(name="created_at", nullable=false, updatable=false)
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(name="updated_at", nullable=false)
+    @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
     @PrePersist
@@ -36,14 +56,81 @@ public class VendingMachine {
     void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
-    protected VendingMachine() {}
-    public VendingMachine(String code, String name, String address, BigDecimal latitude, BigDecimal longitude) {
-        this.code=code; this.name=name; this.address=address; this.latitude=latitude; this.longitude=longitude;
+
+    protected VendingMachine() {
     }
-    public Long getId(){return id;} public String getCode(){return code;} public String getName(){return name;}
-    public String getAddress(){return address;} public BigDecimal getLatitude(){return latitude;}
-    public BigDecimal getLongitude(){return longitude;} public MachineStatus getStatus(){return status;}
-    public LocalDateTime getCreatedAt(){return createdAt;} public LocalDateTime getUpdatedAt(){return updatedAt;}
-    public void setCode(String v){code=v;} public void setName(String v){name=v;} public void setAddress(String v){address=v;}
-    public void setLatitude(BigDecimal v){latitude=v;} public void setLongitude(BigDecimal v){longitude=v;} public void setStatus(MachineStatus v){status=java.util.Objects.requireNonNull(v, "status");}
+
+    public VendingMachine(
+            String code,
+            String name,
+            String address,
+            BigDecimal latitude,
+            BigDecimal longitude
+    ) {
+        this.code = code;
+        this.name = name;
+        this.address = address;
+        this.latitude = latitude;
+        this.longitude = longitude;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public String getCode() {
+        return code;
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public BigDecimal getLatitude() {
+        return latitude;
+    }
+
+    public BigDecimal getLongitude() {
+        return longitude;
+    }
+
+    public MachineStatus getStatus() {
+        return status;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setCode(String code) {
+        this.code = code;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
+
+    public void setLatitude(BigDecimal latitude) {
+        this.latitude = latitude;
+    }
+
+    public void setLongitude(BigDecimal longitude) {
+        this.longitude = longitude;
+    }
+
+    public void setStatus(MachineStatus status) {
+        this.status = java.util.Objects.requireNonNull(status, "status");
+    }
 }
