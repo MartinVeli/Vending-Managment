@@ -10,7 +10,7 @@ public interface InventoryRepository extends JpaRepository<InventoryItem, Long> 
     @Query("select i from InventoryItem i join fetch i.product join fetch i.machine where i.id=:id")
     Optional<InventoryItem> findByIdForUpdate(@Param("id") Long id);
 
-    @Query("select i from InventoryItem i join fetch i.machine m join fetch i.product p where i.quantity <= i.lowStockThreshold and m.active=true order by i.quantity asc")
+    @Query("select i from InventoryItem i join fetch i.machine m join fetch i.product p where i.quantity <= i.lowStockThreshold and m.status = com.tu.vendingmanagement.model.MachineStatus.ACTIVE order by i.quantity asc")
     List<InventoryItem> findLowStock();
 
     @Query("select i from InventoryItem i join fetch i.machine m join fetch i.product p where m.id=:machineId order by p.name")
