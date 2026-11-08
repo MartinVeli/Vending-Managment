@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "vending_machines")
@@ -14,14 +15,35 @@ public class VendingMachine {
     @NotBlank @Column(nullable=false) private String address;
     @NotNull @Column(nullable=false, precision=10, scale=7) private BigDecimal latitude;
     @NotNull @Column(nullable=false, precision=10, scale=7) private BigDecimal longitude;
-    @Column(nullable=false) private boolean active = true;
+    @Enumerated(EnumType.STRING)
+    @Column(nullable=false, length=20)
+    private MachineStatus status = MachineStatus.ACTIVE;
+
+    @Column(name="created_at", nullable=false, updatable=false)
+    private LocalDateTime createdAt;
+
+    @Column(name="updated_at", nullable=false)
+    private LocalDateTime updatedAt;
+
+    @PrePersist
+    void onCreate() {
+        LocalDateTime now = LocalDateTime.now();
+        createdAt = now;
+        updatedAt = now;
+    }
+
+    @PreUpdate
+    void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
     protected VendingMachine() {}
     public VendingMachine(String code, String name, String address, BigDecimal latitude, BigDecimal longitude) {
         this.code=code; this.name=name; this.address=address; this.latitude=latitude; this.longitude=longitude;
     }
     public Long getId(){return id;} public String getCode(){return code;} public String getName(){return name;}
     public String getAddress(){return address;} public BigDecimal getLatitude(){return latitude;}
-    public BigDecimal getLongitude(){return longitude;} public boolean isActive(){return active;}
+    public BigDecimal getLongitude(){return longitude;} public MachineStatus getStatus(){return status;}
+    public LocalDateTime getCreatedAt(){return createdAt;} public LocalDateTime getUpdatedAt(){return updatedAt;}
     public void setCode(String v){code=v;} public void setName(String v){name=v;} public void setAddress(String v){address=v;}
-    public void setLatitude(BigDecimal v){latitude=v;} public void setLongitude(BigDecimal v){longitude=v;} public void setActive(boolean v){active=v;}
+    public void setLatitude(BigDecimal v){latitude=v;} public void setLongitude(BigDecimal v){longitude=v;} public void setStatus(MachineStatus v){status=java.util.Objects.requireNonNull(v, "status");}
 }
