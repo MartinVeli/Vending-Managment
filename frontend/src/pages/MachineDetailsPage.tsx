@@ -1,9 +1,22 @@
-import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { ArrowLeft, Pencil, MapPin } from "lucide-react";
 
 import { getMachine } from "../services/machineService";
 import type { Machine } from "../types/machine";
+import { useCallback, useEffect, useState } from "react";
+import toast from "react-hot-toast";
+
+import StockMonitoring from "../components/StockMonitoring";
+
+import {
+  getMachineInventory,
+  getMachineStockEvents,
+} from "../services/inventoryService";
+
+import type {
+  InventoryItem,
+  StockEvent,
+} from "../services/inventoryService";
 
 export default function MachineDetailsPage() {
   const { id } = useParams();
@@ -11,6 +24,49 @@ export default function MachineDetailsPage() {
   const [machine, setMachine] = useState<Machine | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+
+  const [inventory, setInventory] = useState<InventoryItem[]>([]);
+const [stockEvents, setStockEvents] = useState<StockEvent[]>([]);
+const [stockLoading, setStockLoading] = useState(true);
+const [stockError, setStockError] = useState("");
+
+const loadStockData = useCallback(async () => {
+  const machineId = Number(id);
+
+  if (!Number.isSafeInteger(machineId) || machineId <= 0) {
+    setStockError("Invalid machine ID.");
+    setStockLoading(false);
+    return;
+  }
+
+  setStockLoading(true);
+  setStockError("");
+
+  try {
+    const [inventoryData, eventsData] = await Promise.all([
+      getMachineInventory(machineId),
+      getMachineStockEvents(machineId),
+    ]);
+
+    setInventory(inventoryData);
+    setStockEvents(eventsData);
+  } catch (error) {
+    const message =
+      error instanceof Error
+        ? error.message
+        : "Could not load stock information.";
+
+    setStockError(message);
+    toast.error(message);
+  } finally {
+    setStockLoading(false);
+  }
+}, [id]);
+
+useEffect(() => {
+  void loadStockData();
+}, [loadStockData]);
 
   useEffect(() => {
     if (!id) {
@@ -87,6 +143,24 @@ export default function MachineDetailsPage() {
           <strong>Longitude:</strong> {machine.longitude ?? "Not specified"}
         </p>
       </div>
+
+      {stockError && (
+  <div className="form-error" role="alert">
+    {stockError}
+  </div>
+)}
+
+<StockMonitoring
+  inventory={inventory}
+  events={stockEvents}
+  loading={stockLoading}
+  onRefresh={() => {
+    void loadStockData()
+      .then(() => {
+        // The data was refreshed.
+      });
+  }}
+/>
     </main>
   );
 }

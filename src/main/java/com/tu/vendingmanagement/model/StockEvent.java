@@ -11,7 +11,6 @@ public class StockEvent {
     public enum Type {
         SALE,
         RESTOCK,
-        ADJUSTMENT
     }
 
     @Id
