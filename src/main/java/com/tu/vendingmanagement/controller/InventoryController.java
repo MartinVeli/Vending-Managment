@@ -10,10 +10,43 @@ import java.util.List;
 @RestController @RequestMapping("/api/inventory") @Validated
 public class InventoryController {
  private final InventoryService service;
- public InventoryController(InventoryService service){this.service=service;}
- @PostMapping public InventoryResponse create(@Valid @RequestBody InventoryCreateRequest r){return service.create(r);}
- @GetMapping("/machine/{machineId}") public List<InventoryResponse> byMachine(@PathVariable Long machineId){return service.byMachine(machineId);}
- @GetMapping("/low-stock") public List<InventoryResponse> lowStock(){return service.lowStock();}
- @PostMapping("/{id}/sales") public InventoryResponse sell(@PathVariable Long id,@Valid @RequestBody QuantityRequest r){return service.sell(id,r.quantity());}
- @PostMapping("/{id}/restock") public InventoryResponse restock(@PathVariable Long id,@Valid @RequestBody RestockRequest r){return service.restock(id,r);}
+ public InventoryController(InventoryService service)
+ {
+    this.service=service;
+}
+ @PostMapping 
+ public InventoryResponse create(@Valid @RequestBody InventoryCreateRequest r)
+ {
+    return service.create(r);
+}
+
+ @GetMapping("/machine/{machineId}") 
+ public List<InventoryResponse> byMachine(@PathVariable Long machineId)
+ {
+    return service.byMachine(machineId); 
+ }
+
+ @GetMapping("/low-stock") 
+ public List<InventoryResponse> lowStock(){
+    return service.lowStock();
+}
+
+ @PostMapping("/{id}/sales") 
+ public InventoryResponse sell(@PathVariable Long id,@Valid @RequestBody QuantityRequest r)
+ {
+    return service.sell(id,r.quantity());
+ }
+
+ @PostMapping("/{id}/restock") 
+ public InventoryResponse restock(@PathVariable Long id,@Valid @RequestBody RestockRequest r)
+ {
+    return service.restock(id,r);
+}
+
+@GetMapping("/machine/{machineId}/events")
+public List<StockEventResponse> stockEventsByMachine(
+        @PathVariable Long machineId
+) {
+    return service.stockEventsByMachine(machineId);
+}
 }

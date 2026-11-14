@@ -171,6 +171,27 @@ public class InventoryService {
         return mapper.toResponse(item);
     }
 
+    @Transactional(readOnly = true)
+public List<StockEventResponse> stockEventsByMachine(Long machineId) {
+
+    if (!machineRepo.existsById(machineId)) {
+        throw new NotFoundException("Machine not found");
+    }
+
+    return eventRepo.findByMachineId(machineId)
+            .stream()
+            .map(event -> new StockEventResponse(
+                    event.getId(),
+                    event.getInventoryItem().getId(),
+                    event.getInventoryItem().getProduct().getName(),
+                    event.getType().name(),
+                    event.getQuantityChange(),
+                    event.getNote(),
+                    event.getCreatedAt()
+            ))
+            .toList();
+}
+
     private void createRestockTaskIfNeeded(InventoryItem item) {
         if (item.getQuantity() <= item.getLowStockThreshold()
                 && !taskRepo.existsByInventoryItemIdAndStatus(
