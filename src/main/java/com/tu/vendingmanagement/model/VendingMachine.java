@@ -17,7 +17,7 @@ public class VendingMachine {
     @Column(nullable=false) private boolean active = true;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable=false, length=20)
+    @Column(length=20)
     private MachineStatus status = MachineStatus.ACTIVE;
 
     protected VendingMachine() {}
