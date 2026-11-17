@@ -1,5 +1,7 @@
 package com.tu.vendingmanagement.service;
+
 import com.tu.vendingmanagement.dto.MachineRequest;
+import com.tu.vendingmanagement.model.MachineStatus;
 import com.tu.vendingmanagement.model.VendingMachine;
 import com.tu.vendingmanagement.exception.*;
 import com.tu.vendingmanagement.repository.MachineRepository;
@@ -11,10 +13,31 @@ import java.util.List;
 public class MachineService {
  private final MachineRepository repo;
  public MachineService(MachineRepository repo){this.repo=repo;}
- @Transactional(readOnly=true) public List<VendingMachine> all(){return repo.findAll();}
- @Transactional public VendingMachine create(MachineRequest r){
+
+ @Transactional(readOnly=true)
+ public List<VendingMachine> all(){
+  return repo.findByStatusIsNullOrStatusNot(MachineStatus.DEPRECATED);
+ }
+
+ @Transactional
+ public VendingMachine create(MachineRequest r){
   if(repo.existsByCode(r.code())) throw new BadRequestException("Machine code already exists");
   return repo.save(new VendingMachine(r.code(),r.name(),r.address(),r.latitude(),r.longitude()));
  }
- @Transactional(readOnly=true) public VendingMachine get(Long id){return repo.findById(id).orElseThrow(()->new NotFoundException("Machine not found"));}
+
+ @Transactional(readOnly=true)
+ public VendingMachine get(Long id){
+  return repo.findById(id).orElseThrow(()->new NotFoundException("Machine not found"));
+ }
+
+ @Transactional
+ public void deprecate(Long id) {
+  VendingMachine machine = repo.findById(id)
+      .orElseThrow(() -> new NotFoundException("Machine not found"));
+  if (machine.getStatus() == MachineStatus.DEPRECATED) {
+   throw new ConflictException("Machine is already deprecated");
+  }
+  machine.setStatus(MachineStatus.DEPRECATED);
+  repo.save(machine);
+ }
 }
