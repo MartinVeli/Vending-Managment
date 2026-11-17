@@ -2,7 +2,9 @@ package com.tu.vendingmanagement.service;
 
 import com.tu.vendingmanagement.dto.MachineRequest;
 import com.tu.vendingmanagement.exception.BadRequestException;
+import com.tu.vendingmanagement.exception.ConflictException;
 import com.tu.vendingmanagement.exception.NotFoundException;
+import com.tu.vendingmanagement.model.MachineStatus;
 import com.tu.vendingmanagement.model.VendingMachine;
 import com.tu.vendingmanagement.repository.MachineRepository;
 
@@ -22,14 +24,13 @@ public class MachineService {
 
     @Transactional(readOnly = true)
     public List<VendingMachine> all() {
-        return machineRepository.findAll();
+        return machineRepository.findByStatusNot(MachineStatus.DEPRECATED);
     }
 
     @Transactional(readOnly = true)
     public VendingMachine get(Long id) {
         return machineRepository.findById(id)
-                .orElseThrow(() ->
-                        new NotFoundException("Machine not found"));
+                .orElseThrow(() -> new NotFoundException("Machine not found"));
     }
 
     @Transactional
@@ -65,6 +66,18 @@ public class MachineService {
         machine.setStatus(request.status());
 
         return machineRepository.save(machine);
+    }
+
+    @Transactional
+    public void deprecate(Long id) {
+        VendingMachine machine = get(id);
+
+        if (machine.getStatus() == MachineStatus.DEPRECATED) {
+            throw new ConflictException("Machine is already deprecated");
+        }
+
+        machine.setStatus(MachineStatus.DEPRECATED);
+        machineRepository.save(machine);
     }
 
     private void validateUniqueCode(String code) {
