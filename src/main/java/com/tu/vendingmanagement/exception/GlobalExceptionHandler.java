@@ -11,6 +11,8 @@ public class GlobalExceptionHandler {
     ResponseEntity<Map<String,Object>> notFound(NotFoundException ex){return response(HttpStatus.NOT_FOUND, ex.getMessage());}
     @ExceptionHandler(BadRequestException.class)
     ResponseEntity<Map<String,Object>> badRequest(BadRequestException ex){return response(HttpStatus.BAD_REQUEST, ex.getMessage());}
+    @ExceptionHandler(ConflictException.class)
+    ResponseEntity<Map<String,Object>> conflict(ConflictException ex){return response(HttpStatus.CONFLICT, ex.getMessage());}
     @ExceptionHandler(MethodArgumentNotValidException.class)
     ResponseEntity<Map<String,Object>> validation(MethodArgumentNotValidException ex){
         Map<String,String> errors=new LinkedHashMap<>();
