@@ -21,23 +21,18 @@ public class GlobalExceptionHandler {
         return response(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
-    @ExceptionHandler(MethodArgumentNotValidException.class)
-    ResponseEntity<Map<String, Object>> validation(
-            MethodArgumentNotValidException ex
-    ) {
-        Map<String, String> errors = new LinkedHashMap<>();
+    @ExceptionHandler(ConflictException.class)
+    ResponseEntity<Map<String, Object>> conflict(ConflictException ex) {
+        return response(HttpStatus.CONFLICT, ex.getMessage());
+    }
 
-        ex.getBindingResult()
-                .getFieldErrors()
-                .forEach(error ->
-                        errors.put(
-                                error.getField(),
-                                error.getDefaultMessage()
-                        )
-                );
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    ResponseEntity<Map<String, Object>> validation(MethodArgumentNotValidException ex) {
+        Map<String, String> errors = new LinkedHashMap<>();
+        ex.getBindingResult().getFieldErrors()
+                .forEach(error -> errors.put(error.getField(), error.getDefaultMessage()));
 
         Map<String, Object> body = new LinkedHashMap<>();
-
         body.put("timestamp", Instant.now());
         body.put("status", 400);
         body.put("error", "Validation failed");
@@ -46,16 +41,11 @@ public class GlobalExceptionHandler {
         return ResponseEntity.badRequest().body(body);
     }
 
-    private ResponseEntity<Map<String, Object>> response(
-            HttpStatus status,
-            String message
-    ) {
+    private ResponseEntity<Map<String, Object>> response(HttpStatus status, String message) {
         Map<String, Object> body = new LinkedHashMap<>();
-
         body.put("timestamp", Instant.now());
         body.put("status", status.value());
         body.put("error", message);
-
         return ResponseEntity.status(status).body(body);
     }
 }

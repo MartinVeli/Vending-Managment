@@ -62,3 +62,11 @@ export async function updateMachine(
 
   return handleResponse<Machine>(response);
 }
+
+export async function deleteMachine(id: number): Promise<void> {
+  const response = await fetch(`${API_URL}/${id}`, {
+    method: "DELETE",
+  });
+
+  await handleResponse<void>(response);
+}

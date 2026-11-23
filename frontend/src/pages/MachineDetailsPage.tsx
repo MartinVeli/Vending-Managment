@@ -1,7 +1,7 @@
-import { Link, useParams } from "react-router-dom";
-import { ArrowLeft, Pencil, MapPin } from "lucide-react";
+import { Link, useNavigate, useParams } from "react-router-dom";
+import { ArrowLeft, Pencil, MapPin, Trash2 } from "lucide-react";
 
-import { getMachine } from "../services/machineService";
+import { getMachine, deleteMachine } from "../services/machineService";
 import type { Machine } from "../types/machine";
 import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
@@ -20,53 +20,55 @@ import type {
 
 export default function MachineDetailsPage() {
   const { id } = useParams();
+  const navigate = useNavigate();
 
   const [machine, setMachine] = useState<Machine | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
+  const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const [inventory, setInventory] = useState<InventoryItem[]>([]);
-const [stockEvents, setStockEvents] = useState<StockEvent[]>([]);
-const [stockLoading, setStockLoading] = useState(true);
-const [stockError, setStockError] = useState("");
+  const [stockEvents, setStockEvents] = useState<StockEvent[]>([]);
+  const [stockLoading, setStockLoading] = useState(true);
+  const [stockError, setStockError] = useState("");
 
-const loadStockData = useCallback(async () => {
-  const machineId = Number(id);
+  const loadStockData = useCallback(async () => {
+    const machineId = Number(id);
 
-  if (!Number.isSafeInteger(machineId) || machineId <= 0) {
-    setStockError("Invalid machine ID.");
-    setStockLoading(false);
-    return;
-  }
+    if (!Number.isSafeInteger(machineId) || machineId <= 0) {
+      setStockError("Invalid machine ID.");
+      setStockLoading(false);
+      return;
+    }
 
-  setStockLoading(true);
-  setStockError("");
+    setStockLoading(true);
+    setStockError("");
 
-  try {
-    const [inventoryData, eventsData] = await Promise.all([
-      getMachineInventory(machineId),
-      getMachineStockEvents(machineId),
-    ]);
+    try {
+      const [inventoryData, eventsData] = await Promise.all([
+        getMachineInventory(machineId),
+        getMachineStockEvents(machineId),
+      ]);
 
-    setInventory(inventoryData);
-    setStockEvents(eventsData);
-  } catch (error) {
-    const message =
-      error instanceof Error
-        ? error.message
-        : "Could not load stock information.";
+      setInventory(inventoryData);
+      setStockEvents(eventsData);
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "Could not load stock information.";
 
-    setStockError(message);
-    toast.error(message);
-  } finally {
-    setStockLoading(false);
-  }
-}, [id]);
+      setStockError(message);
+      toast.error(message);
+    } finally {
+      setStockLoading(false);
+    }
+  }, [id]);
 
-useEffect(() => {
-  void loadStockData();
-}, [loadStockData]);
+  useEffect(() => {
+    void loadStockData();
+  }, [loadStockData]);
 
   useEffect(() => {
     if (!id) {
@@ -80,6 +82,26 @@ useEffect(() => {
       .catch(() => setError("Could not load machine details."))
       .finally(() => setLoading(false));
   }, [id]);
+
+  const handleDelete = async () => {
+    const machineId = Number(id);
+
+    if (!Number.isSafeInteger(machineId) || machineId <= 0 || deleting) {
+      return;
+    }
+
+    setDeleting(true);
+    try {
+      await deleteMachine(machineId);
+      toast.success("Machine deprecated successfully.");
+      navigate("/machines", { replace: true });
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Could not delete machine.";
+      toast.error(message);
+      setDeleting(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -111,13 +133,24 @@ useEffect(() => {
           <p>{machine.code}</p>
         </div>
 
-        <Link
-          to={`/machines/${machine.id}/edit`}
-          className="btn btn-primary"
-        >
-          <Pencil size={18} />
-          Edit Machine
-        </Link>
+        <div className="machine-detail-actions">
+          <Link
+            to={`/machines/${machine.id}/edit`}
+            className="btn btn-primary"
+          >
+            <Pencil size={18} />
+            Edit Machine
+          </Link>
+          <button
+            type="button"
+            className="btn btn-danger"
+            onClick={() => setShowDeleteConfirmation(true)}
+            disabled={deleting || machine.status === "DEPRECATED"}
+          >
+            <Trash2 size={18} />
+            Delete Machine
+          </button>
+        </div>
       </div>
 
       <div className="machine-form">
@@ -145,22 +178,67 @@ useEffect(() => {
       </div>
 
       {stockError && (
-  <div className="form-error" role="alert">
-    {stockError}
-  </div>
-)}
+        <div className="form-error" role="alert">
+          {stockError}
+        </div>
+      )}
 
-<StockMonitoring
-  inventory={inventory}
-  events={stockEvents}
-  loading={stockLoading}
-  onRefresh={() => {
-    void loadStockData()
-      .then(() => {
-        // The data was refreshed.
-      });
-  }}
-/>
+      <StockMonitoring
+        inventory={inventory}
+        events={stockEvents}
+        loading={stockLoading}
+        onRefresh={() => {
+          void loadStockData();
+        }}
+      />
+
+      {showDeleteConfirmation && (
+        <div
+          className="delete-dialog-backdrop"
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget && !deleting) {
+              setShowDeleteConfirmation(false);
+            }
+          }}
+        >
+          <section
+            className="delete-dialog"
+            role="alertdialog"
+            aria-modal="true"
+            aria-labelledby="delete-dialog-title"
+            aria-describedby="delete-dialog-description"
+          >
+            <div className="delete-dialog-icon">
+              <Trash2 size={24} />
+            </div>
+            <h2 id="delete-dialog-title">Delete vending machine?</h2>
+            <p id="delete-dialog-description">
+              Are you sure you want to deprecate <strong>{machine.name}</strong>?
+              It will no longer appear in the machines list. Existing records
+              and related data will be kept.
+            </p>
+            <div className="delete-dialog-actions">
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => setShowDeleteConfirmation(false)}
+                disabled={deleting}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn btn-danger"
+                onClick={() => void handleDelete()}
+                disabled={deleting}
+              >
+                <Trash2 size={17} />
+                {deleting ? "Deleting..." : "Yes, delete"}
+              </button>
+            </div>
+          </section>
+        </div>
+      )}
     </main>
   );
 }

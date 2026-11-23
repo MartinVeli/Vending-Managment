@@ -1243,3 +1243,92 @@ button { font: inherit; cursor: pointer; }
     gap: 4px;
   }
 }
+
+/* Machine soft-delete confirmation */
+.machine-detail-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn-danger {
+  border: 1px solid #dc2626;
+  background: #dc2626;
+  color: #fff;
+}
+
+.btn-danger:hover:not(:disabled) {
+  background: #b91c1c;
+}
+
+.btn-danger:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.delete-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgba(15, 23, 42, 0.55);
+}
+
+.delete-dialog {
+  width: min(100%, 460px);
+  padding: 30px;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.25);
+}
+
+.delete-dialog-icon {
+  display: grid;
+  width: 48px;
+  height: 48px;
+  place-items: center;
+  border-radius: 14px;
+  background: #fef2f2;
+  color: #dc2626;
+}
+
+.delete-dialog h2 {
+  margin: 20px 0 10px;
+  color: #172338;
+  font-size: 22px;
+}
+
+.delete-dialog p {
+  color: #64748b;
+  line-height: 1.65;
+}
+
+.delete-dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 26px;
+}
+
+.delete-dialog-actions button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+@media (max-width: 640px) {
+  .machine-detail-actions {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .machine-detail-actions .btn {
+    width: 100%;
+  }
+
+  .delete-dialog {
+    padding: 24px;
+  }
+}
